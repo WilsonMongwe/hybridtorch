@@ -1,7 +1,6 @@
 # hybridtorch
 
-PyTorch based library for Hamiltonian and Shadow Hamiltonian Monte Carlo samplers for inference in probabilistic models.
-This library allows the user to perform inference on user-specified models.
+PyTorch based library for Hamiltonian and Shadow Hamiltonian Monte Carlo samplers for inference in probabilistic models. This library allows the user to perform inference on user-specified models implemented in PyTorch.
 
 The following samplers are currently in development: 
 1. Metropolis-Hastings
