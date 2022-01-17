@@ -1,0 +1,80 @@
+from basemodel import BaseModel
+import torch
+import torch.nn as nn
+from torch.distributions import Normal, MultivariateNormal
+
+class LogisticRegression(BaseModel):
+  def __init__(self, X, Y, dimensions, ard):
+      BaseModel.init__(self, dimensions, ard) 
+      self.X = X # X is assumed to not include the bias term
+      self.feature_size = self.X.shape[1]   
+      # append the intercept term to X
+      self.adjustedX = torch.cat((self.X, torch.ones(self.feature_size,1)), 1)
+      self.Y = Y
+      self.output_dim = 1
+      # When perfoming ARD the parameter space is doubled
+      # Half of the dimension is the paramaters and the rest the alphas
+      self.num_params = (self.feature_size + self.output_dim)
+      self.n_params_half = self.feature_size + self.output_dim
+      
+      if (self.ard):
+          self.num_params =  self.num_params * 2
+      
+      # constants
+      self.ALPHA = 1 # variance of prior distribution 
+      self.prior = Normal(loc = 0, scale = self.ALPHA , validate_args= False)
+      self.JITTER = 0.001 # to prevent division by zero when using ARD
+      
+  def unflattern(self, w):
+      if (self.ard):
+          w = w[0:self.n_params_half]
+            
+      weights = w[0:self.feature_size]
+      bias = w[self.feature_size:self.num_params]
+      return weights.reshape(self.feature_size, ), bias  
+    
+  def predictions(self, X, w):
+      weights, bias = self.unflattern(w)
+      outputs = torch.matmul(X.double(), weights.double()) + bias
+      out = nn.Sigmoid(outputs.reshape(outputs.shape[0], 1))
+      return out
+
+  def log_prob(self, w):
+      w.requires_grad_(True)
+      if (self.ard):
+          # model parameters
+          w_param = w[0:self.n_params_half]
+          # variance of prior distribution
+          w_alphas = torch.exp(w[self.n_params_half:self.num_params])**2
+        
+          # The data and targets
+          X = self.adjustedX
+          y = self.y_true
+          Xw = torch.matmul(X.double(),w_param.double())
+        
+          term_1 =  torch.sum(y * nn.LogSigmoid(Xw) + (1-y) * nn.LogSigmoid(-Xw))
+          term_2 =  MultivariateNormal(torch.zeros(self.n_params_half), (w_alphas + self.JITTER).diag()).log_prob(w_param).sum()
+          term_3 =  self.prior.log_prob(torch.log(w_alphas**0.5)).sum()
+        
+          log_likelihood =  term_1 + term_2 + term_3
+                
+          return -log_likelihood # negative log_like
+      else:
+          # The data and targets
+          X = self.adjustedX
+          y = self.y_true
+          Xw = torch.matmul(X.double(),w.double())
+        
+          term_1 =  torch.sum( y * nn.LogSigmoid(Xw) + (1-y) * nn.LogSigmoid(-Xw) )
+          term_2 =  self.prior.log_prob(w).sum()
+        
+          log_likelihood =  term_1 + term_2 
+          return -log_likelihood # negative log_like
+                
+        
+        
+        
+    
+   
+
+
