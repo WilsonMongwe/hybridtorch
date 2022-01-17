@@ -41,16 +41,14 @@ class LogisticRegression(BaseModel):
 
   def log_prob(self, w):
       w.requires_grad_(True)
+      #targets
+      y = self.Y 
       if (self.ard):
           # model parameters
           w_param = w[0:self.n_params_half]
           # variance of prior distribution
           w_alphas = torch.exp(w[self.n_params_half:self.num_params])**2
-        
-          # The data and targets
-          X = self.adjustedX
-          y = self.y_true
-          Xw = torch.matmul(X.double(),w_param.double())
+          Xw = torch.matmul(self.adjustedX.double(),w_param.double())
         
           term_1 =  torch.sum(y * nn.LogSigmoid(Xw) + (1-y) * nn.LogSigmoid(-Xw))
           term_2 =  MultivariateNormal(torch.zeros(self.n_params_half), (w_alphas + self.JITTER).diag()).log_prob(w_param).sum()
@@ -60,12 +58,8 @@ class LogisticRegression(BaseModel):
                 
           return -log_likelihood # negative log_like
       else:
-          # The data and targets
-          X = self.adjustedX
-          y = self.y_true
-          Xw = torch.matmul(X.double(),w.double())
-        
-          term_1 =  torch.sum( y * nn.LogSigmoid(Xw) + (1-y) * nn.LogSigmoid(-Xw) )
+          Xw = torch.matmul(self.adjustedX.double(),w.double())
+          term_1 =  torch.sum(y * nn.LogSigmoid(Xw) + (1-y) * nn.LogSigmoid(-Xw) )
           term_2 =  self.prior.log_prob(w).sum()
         
           log_likelihood =  term_1 + term_2 
