@@ -1,4 +1,4 @@
-from basemodel import BaseModel
+from base_model import BaseModel
 import torch
 import torch.nn as nn
 from torch.distributions import Normal, MultivariateNormal
