@@ -29,12 +29,12 @@ class LogisticRegression(BaseModel):
             
       weights = w[0:self.feature_size]
       bias = w[self.feature_size:self.num_params]
-      return weights.reshape(self.feature_size, self.dimensions - 1), bias.reshape(self.feature_size, 1)  
+      return weights.reshape(self.feature_size, ), bias 
     
   def predictions(self, X, w):
       weights, bias = self.unflattern(w)
-      outputs = torch.matmul(X.double(), weights.double()) + bias
-      out = nn.Sigmoid(outputs.reshape(outputs.shape[0], 1))
+      outputs = torch.matmul(X, weights) + bias
+      out = nn.Sigmoid()(outputs)
       return out
 
   def log_prob(self, w):
