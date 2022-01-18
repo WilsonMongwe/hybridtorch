@@ -1,4 +1,4 @@
-class BaseModel():
+class BaseModel(object):
   def __init__(self, dimensions, ard):
     self.dimensions = dimensions
     self.ard = ard
