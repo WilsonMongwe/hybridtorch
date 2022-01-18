@@ -13,12 +13,14 @@ model = BLR(X, Y, dim, ard)
 class TestStringMethods(unittest.TestCase):
     
     def test_blr_initialisation(self):
-        self.assertTrue(np.array_equal(model.X.numpy() , X.numpy(), equal_nan=True))
-        self.assertTrue(np.array_equal(model.Y.numpy() , Y.numpy(), equal_nan=True))
-        self.assertEqual(model.dimensions , dim)
-        self.assertEqual(model.ard , ard)
-        self.assertEqual(model.num_params , dim * 2)
-        self.assertEqual(model.num_params_half , dim)
+        self.assertTrue(np.array_equal(model.X.numpy(), X.numpy(), equal_nan=True))
+        self.assertTrue(np.array_equal(model.Y.numpy(), Y.numpy(), equal_nan=True))
+        self.assertEqual(model.dimensions, dim)
+        self.assertEqual(model.ard, ard)
+        self.assertEqual(model.num_params, dim * 2)
+        self.assertEqual(model.num_params_half, dim)
+        self.assertEqual(model.ALPHA, 1)
+        self.assertEqual(model.JITTER, 1e-3)
 
 if __name__ == '__main__':
     unittest.main()
