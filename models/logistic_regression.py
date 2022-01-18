@@ -28,7 +28,7 @@ class LogisticRegression(BaseModel):
           w = w[0:self.num_params_half]
             
       weights = w[0:self.feature_size]
-      bias = w[self.feature_size:self.num_params]
+      bias = w[self.feature_size:self.dimensions]
       return weights.reshape(self.feature_size, ), bias 
     
   def predictions(self, X, w):

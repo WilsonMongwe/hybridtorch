@@ -9,7 +9,7 @@ import torch.nn as nn
 X = torch.tensor([[0.1, 0.1], [0.2, 0.2]])
 Y = torch.tensor([ 1, 0])
 dim = 3
-ard = False
+ard = True
 model = BLR(X, Y, dim, ard)
 
 weights = torch.tensor([0.1, 0.1, 1.0])
@@ -21,7 +21,7 @@ class TestStringMethods(unittest.TestCase):
         self.assertTrue(np.array_equal(model.Y.numpy(), Y.numpy(), equal_nan=True))
         self.assertEqual(model.dimensions, dim)
         self.assertEqual(model.ard, ard)
-        self.assertEqual(model.num_params, dim)
+        self.assertEqual(model.num_params, dim * 2)
         self.assertEqual(model.ALPHA, 1)
         self.assertEqual(model.JITTER, 1e-3)
     
