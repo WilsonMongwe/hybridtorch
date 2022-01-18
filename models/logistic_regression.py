@@ -21,7 +21,7 @@ class LogisticRegression(BaseModel):
       self.num_params = self.dimensions
       if (self.ard):
           self.num_params =  self.num_params * 2
-          self.num_params_half = self.num_params / 2
+          self.num_params_half = self.dimensions
       
   def unflattern(self, w):
       if (self.ard):
@@ -29,7 +29,7 @@ class LogisticRegression(BaseModel):
             
       weights = w[0:self.feature_size]
       bias = w[self.feature_size:self.num_params]
-      return weights.reshape(self.feature_size, ), bias  
+      return weights.reshape(self.feature_size, self.dimensions - 1), bias.reshape(self.feature_size, 1)  
     
   def predictions(self, X, w):
       weights, bias = self.unflattern(w)
