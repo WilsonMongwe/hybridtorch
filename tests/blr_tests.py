@@ -19,7 +19,7 @@ weights = torch.tensor([0.1, 0.1, 1.0])
 weights_ard = torch.tensor([0.1, 0.1, 1.0, 0.2, 0.3, 0.1])
 prior = Normal(loc = 0, scale = model.ALPHA , validate_args= False)
 
-class TestStringMethods(unittest.TestCase):
+class TestLogisticRegressionMethods(unittest.TestCase):
     
     def test_blr_initialisation(self):
         self.assertTrue(np.array_equal(model.X.detach().numpy(), X.detach().numpy(), equal_nan=True))
