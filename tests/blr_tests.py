@@ -3,7 +3,7 @@ from models.logistic_regression import LogisticRegression as BLR
 import torch
 import numpy as np
 import torch.nn as nn
-from torch.distributions import Normal
+from torch.distributions import Normal, MultivariateNormal
 
 
 # test setup
@@ -16,6 +16,7 @@ model = BLR(X, Y, dim, ard)
 model_2 = BLR(X, Y, dim, False)
 
 weights = torch.tensor([0.1, 0.1, 1.0])
+weights_ard = torch.tensor([0.1, 0.1, 1.0, 0.2, 0.3, 0.1])
 prior = Normal(loc = 0, scale = model.ALPHA , validate_args= False)
 
 class TestStringMethods(unittest.TestCase):
@@ -50,6 +51,20 @@ class TestStringMethods(unittest.TestCase):
         term_2 =  prior.log_prob(weights).sum()
         expected = -(term_1 + term_2)
         result = model_2.log_prob(weights)
+        self.assertEqual(result.detach().numpy(), expected.numpy())
+        
+    def test_blr_log_prob_with_ard(self):
+        w_param = weights_ard[0:model.num_params_half]
+        w_alphas = torch.exp(weights_ard[model.num_params_half:model.num_params])**2
+        Xw = torch.matmul(adjustedX, w_param)
+        term_1 =  torch.sum(Y * nn.LogSigmoid()(Xw) + (1-Y) * nn.LogSigmoid()(-Xw))
+        term_2 =  prior.log_prob(w_param).sum()
+        term_2 =  MultivariateNormal(torch.zeros(model.num_params_half), 
+                                     (w_alphas + model.JITTER).diag()).log_prob(w_param).sum()
+        term_3 =  prior.log_prob(torch.log(w_alphas**0.5)).sum()
+      
+        expected =  -(term_1 + term_2 + term_3)
+        result = model.log_prob(weights_ard)
         self.assertEqual(result.detach().numpy(), expected.numpy())
         
 

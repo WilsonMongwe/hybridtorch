@@ -42,7 +42,7 @@ class LogisticRegression(BaseModel):
       if (self.ard):
           # model parameters
           w_param = w[0:self.num_params_half]
-          # variance of prior distribution
+          # variance of prior distribution. Assumed to be log-normal~(0,1)
           w_alphas = torch.exp(w[self.num_params_half:self.num_params])**2
           Xw = torch.matmul(self.adjustedX,w_param)
         
