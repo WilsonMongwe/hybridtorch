@@ -105,7 +105,8 @@ class HamiltonianMonteCarlo(BaseSampler):
                   "no_grad_evaluations": self.no_grad_evaluations,
                   "no_target_evaluations": self.no_target_evaluations,
                 }
- 
+      self.no_grad_evaluations = 0
+      self.no_target_evaluations = 0
       print(":::::::::: HMC Finished:::::::::::")    
       return results
     
