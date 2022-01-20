@@ -57,6 +57,23 @@ class TestHMCMethods(unittest.TestCase):
     def test_hmc_gradients(self):
         sampler_2.compute_gradients(model.log_prob(weights), weights)
         self.assertEqual(sampler_2.no_grad_evaluations, 1)
+        
+    def test_hmc_transition_with_unit_path_length(self):
+        w_result, p_result = sampler.transition(weights, momentum)
+        
+        # expected transition with path_length =1
+        dHdw = sampler.compute_gradients(model.log_prob(weights), weights)
+        p_expected = momentum - 0.5 * sampler.step_size * (dHdw)
+        
+        w_expected = weights + (step_size * p_expected)
+        dHdw = sampler.compute_gradients(model.log_prob(w_expected), w_expected)
+        p_expected = p_expected - 0.5 * sampler.step_size * dHdw
+        p_expected = - p_expected
+        
+        self.assertTrue(np.array_equal(w_expected.detach().numpy(), 
+                                       w_result.detach().numpy(), equal_nan=True))
+        self.assertTrue(np.array_equal(p_expected.detach().numpy(), 
+                                       p_result.detach().numpy(), equal_nan=True))
     
 
         

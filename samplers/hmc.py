@@ -39,7 +39,7 @@ class HamiltonianMonteCarlo(BaseSampler):
       weights, momentum = leap(weights, momentum, self.step_size, 
                                self.path_length, self.target, 
                                self.compute_gradients)
-      return weights, momentum, [], []
+      return weights, momentum
 
   def run(self):
       print(":::::::::: Running HMC :::::::::::")
