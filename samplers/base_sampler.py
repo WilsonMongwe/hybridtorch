@@ -5,6 +5,8 @@ class BaseSampler(object):
     self.weights_0 = weights_0
     self.sample_size = sample_size
     self.burn_in_period = burn_in_period
+    if (self.sample_size < self.burn_in_period):
+        raise Exception('sample size should not exceed burn_in_period.')
     self.adapt = adapt
     self.target_acceptance = target_acceptance
     

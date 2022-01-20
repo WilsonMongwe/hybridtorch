@@ -3,6 +3,8 @@ from torch.autograd import grad
 from utilities.utils import leapfrog_intergrator as leap
 from utilities.utils import metropolis_acceptance_step as mh_step
 from utilities.utils import adaptation
+from utilities.utils import adaptation_params
+from tqdm import tqdm
 
 import time
 import numpy as np
@@ -24,7 +26,7 @@ class HamiltonianMonteCarlo(BaseSampler):
       return self.model.log_prob(weights)
   
   def kinetic(self, momentum):
-      return 0.5 * (momentum ** 2).sum()
+      return 0.5 * torch.matmul(momentum, momentum.T)
   
   def hamiltonian(self, weights, momentum):
         return self.kinetic(momentum) + self.target(weights)
@@ -41,20 +43,17 @@ class HamiltonianMonteCarlo(BaseSampler):
 
   def run(self):
       print(":::::::::: Running HMC :::::::::::")
-     
-      if (self.sample_size < self.burn_in_period):
-             raise Exception('sample size should not exceed burn_in_period.')
-         
+  
+      # initialise variables      
       samples = []
       log_lik = []
       weights = self.weights_0
       n_accepted = 0
-         
-      Hbar_old = 0
-      eps_bar = 1
-      mu = np.log(10 * self.step_size)
-         
-      for i in range(self.sample_size): 
+      
+      # initialise adaptation parameters
+      Hbar_old, eps_bar, mu = adaptation_params(self.step_size)
+
+      for i in tqdm(range(self.sample_size)): 
           momentum = torch.normal(0,1,(self.dim,))
           
           old_Hamiltonian = self.hamiltonian(weights, momentum)  
