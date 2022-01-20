@@ -2,7 +2,7 @@ import unittest
 from samplers.hmc import HamiltonianMonteCarlo as HMC
 import torch
 import numpy as np
-from models.logistic_regression import LogisticRegression as BLR
+from models.blr import LogisticRegression as BLR
 
 
 # test setup

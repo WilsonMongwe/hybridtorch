@@ -1,5 +1,5 @@
 import unittest
-from models.logistic_regression import LogisticRegression as BLR
+from models.blr import LogisticRegression as BLR
 import torch
 import numpy as np
 import torch.nn as nn

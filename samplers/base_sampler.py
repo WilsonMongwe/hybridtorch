@@ -8,7 +8,7 @@ class BaseSampler(object):
     self.adapt = adapt
     self.target_acceptance = target_acceptance
     
-  def transition(self, w_current_sate):
+  def transition(self, w, p):
      raise NotImplementedError()
 
   def run(self):
