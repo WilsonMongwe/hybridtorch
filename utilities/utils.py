@@ -4,6 +4,14 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 
+
+def adaptation_params(step_size):
+    Hbar_old = 0
+    eps_bar = 1
+    mu = np.log(10 * step_size)
+    return Hbar_old, eps_bar, mu
+
+
 def metropolis_acceptance_step(u, old_hamiltonian, new_hamiltonian,i):
     delta = new_hamiltonian - old_hamiltonian 
     alpha = torch.min(torch.tensor(1.0), torch.exp(-delta)) 
