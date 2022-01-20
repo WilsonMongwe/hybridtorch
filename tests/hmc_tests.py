@@ -14,7 +14,7 @@ model = BLR(X, Y, dim, ard)
 
 sample_size = 5
 burn_in_period = 2
-adapt = True
+adapt = False
 target_acceptance = 0.8 
 step_size = 1e-1
 path_length = 2
@@ -24,6 +24,7 @@ momentum = torch.tensor([0.11, 0.12, 0.31])
 sampler = HMC(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size, path_length)
 sampler_1 = HMC(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size, 1)
 sampler_2 = HMC(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size, path_length)
+sampler_full = HMC(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size, path_length)
 
 class TestHMCMethods(unittest.TestCase):
     
@@ -95,6 +96,28 @@ class TestHMCMethods(unittest.TestCase):
                                      w_result.detach().numpy(), rtol = 1e-8, equal_nan=True,))
          self.assertTrue(np.allclose(p_result.detach().numpy(), 
                                      p_expected.detach().numpy(), rtol = 1e-8, equal_nan=True,))
+         
+    def test_hmc_run(self):
+        torch.manual_seed(10)
+        result = sampler_full.run()
+
+        self.assertEqual(result["no_grad_evaluations"], 15)
+        self.assertEqual(result["no_target_evaluations"], 30)
+        self.assertEqual(result["accepted_rate"], 100.0)
+        
+        expected_samples = np.array([[-0.0231443 , -0.00689188,  0.23073448],
+               [-0.2682258 , -0.16507077,  0.02738051],
+               [-0.42919487, -0.23667525,  0.2682095 ],
+               [-0.5547742 , -0.36253634,  0.3543284 ],
+               [-0.5419699 , -0.13798103,  0.5343509 ]])
+        
+        expected_log_like = np.array([4.181287 , 4.171888 , 4.273247 , 4.391862 , 4.4549127]) 
+        
+        self.assertTrue(np.allclose(result["samples"], 
+                                    expected_samples, rtol = 1e-7, equal_nan=True,))
+        self.assertTrue(np.allclose(result["log_like"], 
+                                    expected_log_like, rtol = 1e-7, equal_nan=True,))
+        
 
     
 

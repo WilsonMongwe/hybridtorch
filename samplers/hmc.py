@@ -91,7 +91,7 @@ class HamiltonianMonteCarlo(BaseSampler):
       total_time = (end_time - start_time)
   
       accepted_rate = (n_accepted / self.sample_size)*100
-  
+      print("\n")
       print("Total time :", total_time)  
       print("Acceptance Rate: ", accepted_rate, "%")
       print('Final Step Size: ', self.step_size )     
