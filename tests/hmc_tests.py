@@ -17,11 +17,13 @@ burn_in_period = 2
 adapt = True
 target_acceptance = 0.8 
 step_size = 1e-1
-path_length = 5
+path_length = 1
 weights = torch.tensor([0.1, 0.2, 0.3])
 momentum = torch.tensor([0.11, 0.12, 0.31])
+
 sampler = HMC(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size, path_length)
 sampler_1 = HMC(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size, path_length)
+sampler_2 = HMC(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size, path_length)
 
 class TestHMCMethods(unittest.TestCase):
     
@@ -40,7 +42,7 @@ class TestHMCMethods(unittest.TestCase):
     def test_hmc_target(self):
         sampler_1.target(weights)
         sampler_1.target(weights)
-        self.assertEqual(sampler.no_target_evaluations, 2)
+        self.assertEqual(sampler_1.no_target_evaluations, 2)
         
     def test_hmc_kinetic(self):
         result = sampler.kinetic(momentum).numpy()
@@ -51,6 +53,10 @@ class TestHMCMethods(unittest.TestCase):
         result = sampler.hamiltonian(weights, momentum)
         expected = sampler.target(weights) +  sampler.kinetic(momentum)
         self.assertEqual(result.detach().numpy(), expected.detach().numpy())
+        
+    def test_hmc_gradients(self):
+        sampler_2.compute_gradients(model.log_prob(weights), weights)
+        self.assertEqual(sampler_2.no_grad_evaluations, 1)
     
 
         
