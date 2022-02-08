@@ -28,6 +28,9 @@ sampler_full = HMC(model, weights, sample_size, burn_in_period, adapt, target_ac
 
 class TestHMCMethods(unittest.TestCase):
     
+    def setUp(self):
+        print ("In method", self._testMethodName)
+    
     def test_hmc_initialisation(self):
         self.assertEqual(sampler.model.ard, ard)
         self.assertEqual(sampler.model.dimensions, dim)
@@ -118,10 +121,11 @@ class TestHMCMethods(unittest.TestCase):
         self.assertTrue(np.allclose(result["log_like"], 
                                     expected_log_like, rtol = 1e-7, equal_nan=True,))
         
+        
 
     
 
         
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    unittest.main()
    

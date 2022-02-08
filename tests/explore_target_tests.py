@@ -27,7 +27,8 @@ sampler = HMC(model, weights, sample_size, burn_in_period, adapt, target_accepta
 
 #explre target
 chains = 2
-explore = ExploreTarget(model,["HMC"], [sampler], chains)
+explore = ExploreTarget(["HMC"], [sampler], chains)
+explore_2 = ExploreTarget(["HMC"], [sampler], chains)
 
 
 class TestExploreTargetMethods(unittest.TestCase):
@@ -41,8 +42,7 @@ class TestExploreTargetMethods(unittest.TestCase):
         explore.run_chains()
         results = explore.results
         
-        self.assertEqual(list(results.keys()), ["HMC_0", "HMC_1"])
-        
+        self.assertEqual(list(results.keys()), ["HMC_0", "HMC_1"]) 
         
         expected_samples_1 = np.array([[-0.0231443 , -0.00689188,  0.23073448],
                [-0.2682258 , -0.16507077,  0.02738051],
@@ -73,6 +73,22 @@ class TestExploreTargetMethods(unittest.TestCase):
         
         self.assertTrue(np.allclose(results["HMC_1"]["log_like"], 
                                     expected_log_like_2, rtol = 1e-7, equal_nan=True,))
+        
+        
+    def test_exlore_target_get_ess(self):
+        torch.manual_seed(10)
+        explore_2.run_chains()
+        explore_2.ess()
+        results_2 = explore_2.results
+        
+        expected_ess  = np.array([5.0000, 4.8016])
+        actual_ess = results_2["HMC_multivariate"]
+                
+        self.assertTrue(np.allclose(expected_ess, 
+                                    actual_ess, rtol = 1e-5, equal_nan=True,))
+        
+        
+        
         
 if __name__ == '__main__':
     unittest.main(verbosity=2)
