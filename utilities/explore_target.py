@@ -1,13 +1,18 @@
 import torch
 
 class ExploreTarget(object):
-  def __init__(self, model, sampler_names, samplers, number_of_chains):
-      self.model = model
+  def __init__(self, sampler_names, samplers, number_of_chains):
+      if (number_of_chains <= 0):
+          raise Exception("number_of_chains must be greater than zero")
+      self.number_of_samplers = len(sampler_names)
+      if (self.number_of_samplers == 0):
+          raise Exception("samplers list must have atleast one element")
+      
+      self.model = samplers[0].model
       self.sampler_names = sampler_names
       self.samplers = samplers
       self.number_of_chains = number_of_chains
-      self.number_of_samplers = len(self.sampler_names)
-      self.initial_states = torch.randn(self.number_of_chains, model.dimensions)
+      self.initial_states = torch.randn(self.number_of_chains, self.model.dimensions)
       self.results = {}
       
   def run_chains(self):
