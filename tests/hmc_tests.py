@@ -119,13 +119,7 @@ class TestHMCMethods(unittest.TestCase):
         self.assertTrue(np.allclose(result["samples"], 
                                     expected_samples, rtol = 1e-7, equal_nan=True,))
         self.assertTrue(np.allclose(result["log_like"], 
-                                    expected_log_like, rtol = 1e-7, equal_nan=True,))
-        
-        
-
-    
-
-        
+                                    expected_log_like, rtol = 1e-7, equal_nan=True,))                     
 if __name__ == '__main__':
     unittest.main()
    

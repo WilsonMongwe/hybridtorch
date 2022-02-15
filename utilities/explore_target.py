@@ -58,8 +58,6 @@ class ExploreTarget(object):
                self.results[self.sampler_names[s].upper() 
                           + "_"+"ess_univariate"] = torch.tensor(min_ess) 
            
-           
-
   def r_hat(self):
       if (len(self.results.keys()) == 0):
           raise Exception('r_hat: Results object is empty. run the run_chains method first') 

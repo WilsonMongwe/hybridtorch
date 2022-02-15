@@ -57,6 +57,90 @@ def leapfrog_intergrator(weights, momentum, step_size,
 
     return weights, -momentum
 
+
+
+def magnetic_field_exp_and_factor(G, step_size):
+    eig, eig_vec = torch.symeig(G, eigenvectors=True)
+    eig = eig.numpy() 
+    eig_vec = eig_vec.numpy() 
+    
+    positions = eig != 0.00000
+    positions_new =  eig == 0.00000
+
+    eig_new = eig[positions]
+    lamb = torch.tensor(np.diag(eig_new))
+    U_lamb = eig_vec[:, positions]
+    U_0 = eig_vec[:,positions_new]
+
+    lamb_exp =  torch.matrix_exp((lamb * step_size)).numpy()
+    lamb_exp_minus =  torch.matrix_exp(lamb * step_size) - torch.eye(lamb.shape[0])
+    lamb_exp_minus_new = np.matmul(torch.inverse(lamb).numpy(), lamb_exp_minus.numpy())
+    
+    term1 = np.matmul(np.matmul(U_lamb,lamb_exp), U_lamb.T)
+    term2 = np.matmul(U_0,U_0.T)
+    
+    G_exp =  torch.tensor(term1 + term2)
+    factor = np.matmul(np.matmul(U_lamb,lamb_exp_minus_new), U_lamb.T) 
+    + step_size * np.matmul(U_0, U_0.T)
+    
+    return G_exp, torch.tensor(factor)
+
+
+def magnetic_field_exp_and_factor_sv(G, step_size, volMat):
+    newG = torch.matmul(G, volMat)
+    eig, eig_vec = torch.symeig(newG, eigenvectors=True)
+    eig = eig.numpy() 
+    eig_vec = eig_vec.numpy() 
+    positions = eig != 0.00000
+    positions_new =  eig == 0.00000
+
+    eig_new = eig[positions]
+    lamb = torch.tensor(np.diag(eig_new))
+    
+    U_lamb = eig_vec[:, positions]
+    U_0 = eig_vec[:,positions_new]
+
+    lamb_exp =  torch.matrix_exp((lamb * step_size)).numpy()
+    lamb_exp_minus =  torch.matrix_exp(lamb * step_size) - torch.eye(lamb.shape[0])
+    lamb_exp_minus_new = np.matmul(torch.inverse(lamb).numpy(), lamb_exp_minus.numpy())
+    
+    term1 = np.matmul(np.matmul(U_lamb,lamb_exp), U_lamb.T)
+    term2 = np.matmul(U_0,U_0.T)
+    
+    G_exp =  torch.tensor(term1 + term2)
+    factor = np.matmul(np.matmul(U_lamb,lamb_exp_minus_new), U_lamb.T) + step_size * np.matmul(U_0, U_0.T)
+    
+    return G_exp, torch.tensor(factor)
+
+def magnetic_leap_frog_intergrator(weights, momentum, step_size,
+                                   path_length, log_p, gradients, G):
+
+    G_exp, factor = magnetic_field_exp_and_factor(G, step_size)
+
+    #step 1
+    weights = weights    
+    dHdw = gradients(log_p(weights), weights)
+    momentum = momentum - 0.5 * step_size * dHdw
+        
+    for t in range(path_length-1): 
+        # step 2
+        weights = weights + torch.matmul(factor , momentum)
+        momentum = torch.matmul(G_exp, momentum)
+        #step 3
+        weights = weights 
+        dHdw = gradients(log_p(weights), weights)
+        momentum = momentum - step_size * dHdw
+
+    # step 2
+    weights = weights + torch.matmul(factor , momentum)
+    momentum = torch.matmul(G_exp, momentum)
+    # step 3
+    weights = weights
+    dHdw = gradients(log_p(weights), weights)
+    momentum = momentum -0.5 * step_size * dHdw
+    
+    return weights, -momentum, -G
+
 #################### Process datasets ###########################
 
 def audit_outcomes_dataset_data():
