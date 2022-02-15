@@ -88,6 +88,19 @@ class TestExploreTargetMethods(unittest.TestCase):
                                     actual_ess, rtol = 1e-5, equal_nan=True,))
         
         
+    def test_exlore_target_get_r_hat(self):
+        torch.manual_seed(10)
+        explore_2.run_chains()
+        explore_2.r_hat()
+        results_2 = explore_2.results
+        
+        expected_r_hat = np.array([2.9994])
+        actual_r_hat = results_2["HMC_r_hat"]
+                
+        self.assertTrue(np.allclose(expected_r_hat, 
+                                    actual_r_hat, rtol = 1e-5, equal_nan=True,))
+        
+        
         
         
 if __name__ == '__main__':
