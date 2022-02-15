@@ -74,6 +74,9 @@ class TestHMCMethods(unittest.TestCase):
                                        w_result.detach().numpy(), equal_nan=True))
         self.assertTrue(np.array_equal(p_expected.detach().numpy(), 
                                        p_result.detach().numpy(), equal_nan=True))
+        
+        self.assertTrue(np.array_equal(-G.detach().numpy(), 
+                                       G_result.detach().numpy(), equal_nan=True))
   
 if __name__ == '__main__':
     unittest.main()
