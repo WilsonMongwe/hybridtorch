@@ -30,6 +30,9 @@ sampler = mhmc(model, weights, sample_size, burn_in_period, adapt,
 sampler_1 = mhmc(model, weights, sample_size, burn_in_period, adapt, 
                  target_acceptance, step_size, path_lehth, G)
 
+sampler_2 = mhmc(model, weights, sample_size, burn_in_period, adapt, 
+                 target_acceptance, step_size, 3, G)
+
 class TestHMCMethods(unittest.TestCase):
     
     def setUp(self):
@@ -77,6 +80,29 @@ class TestHMCMethods(unittest.TestCase):
         
         self.assertTrue(np.array_equal(-G.detach().numpy(), 
                                        G_result.detach().numpy(), equal_nan=True))
+        
+        
+    def test_mhmc_run(self):
+        torch.manual_seed(10)
+        result = sampler_2.run()
+
+        self.assertEqual(result["no_grad_evaluations"], 20)
+        self.assertEqual(result["no_target_evaluations"], 35)
+        self.assertEqual(result["accepted_rate"], 80.0)
+        
+        expected_samples = np.array([[ 0.16226351,  0.13773648 , 0.19105917],
+         [ 0.09457321 , 0.2054268 , -0.11499383],
+         [ 0.0317698,   0.2682302  , 0.24756917],
+         [ 0.03535197 , 0.26464802 , 0.3679263 ],
+         [ 0.03535197,  0.26464802 , 0.3679263 ]])
+        
+        expected_log_like = np.array([4.212966 , 4.191574 , 4.246612 , 4.3038206 ,4.3038206]) 
+        
+        self.assertTrue(np.allclose(result["samples"], 
+                                    expected_samples, rtol = 1e-7, equal_nan=True,))
+        self.assertTrue(np.allclose(result["log_like"], 
+                                    expected_log_like, rtol = 1e-7, equal_nan=True,))  
+        
   
 if __name__ == '__main__':
     unittest.main()
