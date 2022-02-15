@@ -82,10 +82,23 @@ class TestExploreTargetMethods(unittest.TestCase):
         results_2 = explore_2.results
         
         expected_ess  = np.array([5.0000, 4.8016])
-        actual_ess = results_2["HMC_multivariate"]
+        actual_ess = results_2["HMC_ess_multivariate"]
                 
         self.assertTrue(np.allclose(expected_ess, 
                                     actual_ess, rtol = 1e-5, equal_nan=True,))
+        
+        
+    def test_exlore_target_get_ess_min(self):
+            torch.manual_seed(10)
+            explore_2.run_chains()
+            explore_2.ess("univariate")
+            results_2 = explore_2.results
+            
+            expected_ess  = np.array([7.2247])
+            actual_ess = results_2["HMC_ess_univariate"]
+                    
+            self.assertTrue(np.allclose(expected_ess, 
+                                        actual_ess, rtol = 1e-5, equal_nan=True,))
         
         
     def test_exlore_target_get_r_hat(self):

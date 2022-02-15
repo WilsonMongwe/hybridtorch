@@ -41,10 +41,22 @@ class ExploreTarget(object):
                   multi_ess.append(mESS(samples, b = mESS_type))
                       
               self.results[self.sampler_names[s].upper() 
-                           + "_"+"multivariate"] = torch.tensor(multi_ess)
+                           + "_"+"ess_multivariate"] = torch.tensor(multi_ess)
               
       if (ess_method == "univariate"):
-           raise Exception('Chosen ESS calc method not supported.')
+           min_ess = []
+           for s in range(self.number_of_samplers): 
+               samples = []
+               for chain in range(self.number_of_chains):
+                   name = self.sampler_names[s].upper() + "_" + str(chain)
+                   samples.append(self.results[name]["samples"])
+              
+               idata = az.convert_to_inference_data(np.array(samples))
+               rhat_min_for_sampler = az.ess(idata).max().x.values.reshape(1,1)[0]
+               min_ess.append(rhat_min_for_sampler[0])
+             
+               self.results[self.sampler_names[s].upper() 
+                          + "_"+"ess_univariate"] = torch.tensor(min_ess) 
            
            
 
