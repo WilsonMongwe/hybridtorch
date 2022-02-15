@@ -1,5 +1,7 @@
 import unittest
 from samplers.hmc import HamiltonianMonteCarlo as HMC
+from samplers.mala import MetropolisAdjustedLengavinAlgorithm as MALA
+
 import torch
 import numpy as np
 from models.blr import LogisticRegression as BLR
@@ -23,12 +25,17 @@ step_size = 1e-1
 path_length = 2
 weights = torch.tensor([0.1, 0.2, 0.3])
 momentum = torch.tensor([0.11, 0.12, 0.31])
+
+#samplers
 sampler = HMC(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size, path_length)
+sampler2 = MALA(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size)
 
 #explre target
 chains = 2
 explore = ExploreTarget(["HMC"], [sampler], chains)
 explore_2 = ExploreTarget(["HMC"], [sampler], chains)
+explore_3 = ExploreTarget(["HMC", "MALA"], [sampler, sampler2], chains)
+
 
 
 class TestExploreTargetMethods(unittest.TestCase):
@@ -109,6 +116,19 @@ class TestExploreTargetMethods(unittest.TestCase):
         
         expected_r_hat = np.array([2.9994])
         actual_r_hat = results_2["HMC_r_hat"]
+                
+        self.assertTrue(np.allclose(expected_r_hat, 
+                                    actual_r_hat, rtol = 1e-5, equal_nan=True,))
+        
+    
+    def test_exlore_target_get_r_hat_two_samplers(self):
+        torch.manual_seed(10)
+        explore_3.run_chains()
+        explore_3.r_hat()
+        results_3 = explore_3.results
+        
+        expected_r_hat = np.array([2.3180, 2.3180])
+        actual_r_hat = [results_3["HMC_r_hat"][0], results_3["MALA_r_hat"][0]]
                 
         self.assertTrue(np.allclose(expected_r_hat, 
                                     actual_r_hat, rtol = 1e-5, equal_nan=True,))
