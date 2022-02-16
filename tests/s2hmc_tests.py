@@ -57,11 +57,6 @@ class TestS2HMCMethods(unittest.TestCase):
         sampler_1.target(weights)
         self.assertEqual(sampler_1.no_target_evaluations, 2)
         
-   
-    def test_s2hmc_transition(self):
-        return
-        
-        
     def test_s2hmc_run(self):
         torch.manual_seed(10)
         result = sampler_2.run()
