@@ -1,5 +1,5 @@
 import unittest
-from samplers.mala import MetropolisAdjustedLengavinAlgorithm as mala
+from samplers.mh import MetropolisHastings as mh
 import torch
 import numpy as np
 from models.blr import LogisticRegression as BLR
@@ -20,15 +20,15 @@ step_size = 1e-1
 weights = torch.tensor([0.1, 0.2, 0.3])
 momentum = torch.tensor([0.11, 0.12, 0.31])
 
-sampler = mala(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size)
-sampler_1 = mala(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size)
+sampler = mh(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size)
+sampler_1 = mh(model, weights, sample_size, burn_in_period, adapt, target_acceptance, step_size)
 
-class TestMALAMethods(unittest.TestCase):
+class TestMHMethods(unittest.TestCase):
     
     def setUp(self):
         print ("In method", self._testMethodName)
     
-    def test_mala_initialisation(self):
+    def test_mh_initialisation(self):
         self.assertEqual(sampler.model.ard, ard)
         self.assertEqual(sampler.model.dimensions, dim)
         self.assertEqual(sampler.adapt, adapt)
@@ -36,32 +36,36 @@ class TestMALAMethods(unittest.TestCase):
         self.assertEqual(sampler.burn_in_period, burn_in_period)
         self.assertEqual(sampler.target_acceptance, target_acceptance)
         self.assertEqual(sampler.step_size, step_size)
-        self.assertEqual(sampler.path_length, 1)
         self.assertTrue(np.array_equal(sampler.weights_0.detach().numpy(), 
                                        weights.detach().numpy(), equal_nan=True))
       
-    def test_mala_target(self):
+    def test_mh_target(self):
         sampler_1.target(weights)
         sampler_1.target(weights)
         self.assertEqual(sampler_1.no_target_evaluations, 2)
        
    
-    def test_mala_transition(self):
-        w_result, p_result = sampler_1.transition(weights, momentum)
+    def test_mh_run(self):
+        torch.manual_seed(10)
+        result = sampler_1.run()
+
+        self.assertEqual(result["no_target_evaluations"], 15)
+        self.assertEqual(result["accepted_rate"], 100.0)
         
-        # expected transition with path_length =1
-        dHdw = sampler_1.compute_gradients(model.log_prob(weights), weights)
-        p_expected = momentum - 0.5 * sampler_1.step_size * (dHdw)
+        print("samples", result["log_like"])
         
-        w_expected = weights + (step_size * p_expected)
-        dHdw = sampler_1.compute_gradients(model.log_prob(w_expected), w_expected)
-        p_expected = p_expected - 0.5 * sampler_1.step_size * dHdw
-        p_expected = - p_expected
+        expected_samples = np.array([[ 0.03986072,  0.13986072,  0.23986073],
+         [-0.06136026,  0.03863974,  0.13863975],
+         [-0.28840208, -0.18840207, -0.08840206],
+         [-0.36272803, -0.262728,   -0.16272801],
+         [-0.44964606, -0.34964603, -0.24964602]])
         
-        self.assertTrue(np.array_equal(w_expected.detach().numpy(), 
-                                       w_result.detach().numpy(), equal_nan=True))
-        self.assertTrue(np.array_equal(p_expected.detach().numpy(), 
-                                       p_result.detach().numpy(), equal_nan=True))
+        expected_log_like = np.array([4.209203,  4.158782,  4.1890407, 4.242026,  4.3308573]) 
+        
+        self.assertTrue(np.allclose(result["samples"], 
+                                    expected_samples, rtol = 1e-7, equal_nan=True,))
+        self.assertTrue(np.allclose(result["log_like"], 
+                                    expected_log_like, rtol = 1e-7, equal_nan=True,)) 
  
 if __name__ == '__main__':
     unittest.main()

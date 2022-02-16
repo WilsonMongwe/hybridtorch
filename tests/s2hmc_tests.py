@@ -33,7 +33,7 @@ sampler_1 = s2hmc(model, weights, sample_size, burn_in_period, adapt,
 sampler_2 = s2hmc(model, weights, sample_size, burn_in_period, adapt, 
                  target_acceptance, step_size, 3)
 
-class TestHMCMethods(unittest.TestCase):
+class TestS2HMCMethods(unittest.TestCase):
     
     def setUp(self):
         print ("In method", self._testMethodName)
@@ -49,6 +49,8 @@ class TestHMCMethods(unittest.TestCase):
         self.assertEqual(sampler.path_length, path_lehth)
         self.assertTrue(np.array_equal(sampler.weights_0.detach().numpy(), 
                                        weights.detach().numpy(), equal_nan=True))
+        self.assertEqual(sampler.tolerance, 1e-6)
+        self.assertEqual(sampler.max_iterations, 100)
       
     def test_s2hmc_target(self):
         sampler_1.target(weights)

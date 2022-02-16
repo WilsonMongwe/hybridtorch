@@ -33,7 +33,7 @@ sampler_1 = mhmc(model, weights, sample_size, burn_in_period, adapt,
 sampler_2 = mhmc(model, weights, sample_size, burn_in_period, adapt, 
                  target_acceptance, step_size, 3, G)
 
-class TestHMCMethods(unittest.TestCase):
+class TestMHMCMethods(unittest.TestCase):
     
     def setUp(self):
         print ("In method", self._testMethodName)
