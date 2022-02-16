@@ -15,7 +15,6 @@ class SeperableShadowHybridMonteCarlo(HamiltonianMonteCarlo):
                adapt, target_acceptance, step_size, path_length):
       HamiltonianMonteCarlo.__init__(self, model,  weights_0, sample_size, burn_in_period,
                    adapt, target_acceptance, step_size, path_length)
-      
       self.tolerance = 1e-6
       self.max_iterations = 100
       
@@ -163,10 +162,12 @@ class SeperableShadowHybridMonteCarlo(HamiltonianMonteCarlo):
           
           old_shadow_hamiltonian = self.shadow_hamiltonian(weights, momentum)
           
+          # pre processing step
           momentum_hat, weights_hat = self.pre_processing(momentum, weights)
           
           new_weights, new_momentum = self.transition(weights_hat, momentum_hat)
           
+          # post processing step
           new_momentum , new_weights = self.post_processing(new_momentum, new_weights)
           
           new_shadow_hamiltonian = self.shadow_hamiltonian(new_weights, new_momentum)
@@ -174,11 +175,11 @@ class SeperableShadowHybridMonteCarlo(HamiltonianMonteCarlo):
           new_Hamiltonian = self.hamiltonian(new_weights, new_momentum)
           
           # store importance weights
-          importance_weights.append((torch.exp(new_shadow_hamiltonian-new_Hamiltonian)).detach().clone().numpy())
+          importance_weights.append((torch.exp(new_shadow_hamiltonian 
+                                               - new_Hamiltonian)).detach().clone().numpy())
              
           u = torch.rand(())
           accept_reject, alpha = mh_step(u,new_shadow_hamiltonian, old_shadow_hamiltonian, i) 
-          
     
           if accept_reject :
              weights = new_weights.detach().clone()
@@ -221,6 +222,7 @@ class SeperableShadowHybridMonteCarlo(HamiltonianMonteCarlo):
                   "no_grad_evaluations": self.no_grad_evaluations,
                   "no_target_evaluations": self.no_target_evaluations,
                 }
+      
       self.no_grad_evaluations = 0
       self.no_target_evaluations = 0
       print(":::::::::: S2HMC Finished:::::::::::")    
