@@ -58,6 +58,24 @@ def leapfrog_intergrator(weights, momentum, step_size,
     return weights, -momentum
 
 
+def leapfrog_intergrator_sv(weights, momentum, step_size,
+                         path_length, log_p, gradients, vol):
+    
+    dHdw = gradients(log_p(weights), weights)
+    momentum = momentum - 0.5 * step_size * (dHdw)
+    
+    for t in range(path_length -1):
+        weights = weights + (step_size * momentum)/vol
+        dHdw = gradients(log_p(weights), weights)
+        momentum = momentum - step_size * dHdw
+    
+    weights = weights + (step_size * momentum)/vol
+    dHdw = gradients(log_p(weights), weights)
+    momentum = momentum - 0.5 * step_size * dHdw
+
+    return weights, -momentum
+
+
 
 def magnetic_field_exp_and_factor(G, step_size):
     eig, eig_vec = torch.symeig(G, eigenvectors=True)
@@ -140,6 +158,37 @@ def magnetic_leap_frog_intergrator(weights, momentum, step_size,
     momentum = momentum -0.5 * step_size * dHdw
     
     return weights, -momentum, -G
+
+
+def magnetic_leap_frog_intergrator_sv(weights, momentum, step_size,
+                                   path_length, log_p, gradients, G, variance):
+
+    G_exp, factor = magnetic_field_exp_and_factor_sv(G, step_size, (1 / variance).diag())
+
+    #step 1
+    weights = weights    
+    dHdw = gradients(log_p(weights), weights)
+    momentum = momentum - 0.5 * step_size * dHdw
+        
+    for t in range(path_length-1): 
+        # step 2
+        weights = weights + torch.matmul(factor , momentum) / variance
+        momentum = torch.matmul(G_exp, momentum)
+        #step 3
+        weights = weights 
+        dHdw = gradients(log_p(weights), weights)
+        momentum = momentum - step_size * dHdw
+
+    # step 2
+    weights = weights + torch.matmul(factor , momentum) / variance
+    momentum = torch.matmul(G_exp, momentum)
+    # step 3
+    weights = weights
+    dHdw = gradients(log_p(weights), weights)
+    momentum = momentum -0.5 * step_size * dHdw
+    
+    return weights, -momentum, -G
+
 
 #################### Process datasets ###########################
 
