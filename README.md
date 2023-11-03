@@ -24,4 +24,4 @@ The following models are currently in development:
 1. Neal's funnel
 2. Banana shaped distribution
 3. Bayesian Logistic Regression
-4. Bayesian Neural Network
+4. Bayesian Neural Networks
